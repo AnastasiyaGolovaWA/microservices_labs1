@@ -37,6 +37,7 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
                 .antMatchers("/users/unprotected-data").permitAll()
                 .antMatchers("/users/create").permitAll()
+                .antMatchers("/users/admin").hasRole("admin")
                 .antMatchers("/users/signin").permitAll()
                 .anyRequest().authenticated();
 

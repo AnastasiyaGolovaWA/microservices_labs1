@@ -24,11 +24,8 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 
 @RequestMapping(value = "/users")
@@ -43,6 +40,11 @@ public class UserController {
     private String role = "user";
     //Get client secret from the Keycloak admin console (in the credential tab)
     private String clientSecret = "QaJzlRQ3XTofzcCrx1HB3LwuoQWxqCdo";
+
+    @RequestMapping(value = "/admin", method = RequestMethod.GET)
+    public ResponseEntity<String> getAdmin() {
+        return ResponseEntity.ok("Hello Admin");
+    }
 
     @PostMapping(path = "/create")
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
@@ -100,7 +102,7 @@ public class UserController {
 
         Map<String, Object> clientCredentials = new HashMap<>();
         clientCredentials.put("secret", clientSecret);
-        clientCredentials.put("admin", "root");
+        //clientCredentials.put("admin", "root");
 
         Configuration configuration =
                 new Configuration(authServerUrl, realm, clientId, clientCredentials, null);
