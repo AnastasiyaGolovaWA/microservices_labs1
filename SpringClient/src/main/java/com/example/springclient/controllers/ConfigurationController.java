@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RefreshScope
 @RestController
-public class HelloController {
+public class ConfigurationController {
 
     @Autowired
     private Environment env;
 
-    @RequestMapping("/hello")
-    public String getUserPath() {
-        return env.getProperty("text.greeting");
+    @RequestMapping("/configurations")
+    public String getConfigurations() {
+        return env.getProperty("keycloak.realm");
     }
 }
