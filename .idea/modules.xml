@@ -4,7 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SpringClient/SpringClient.iml" filepath="$PROJECT_DIR$/SpringClient/SpringClient.iml" />
       <module fileurl="file://$PROJECT_DIR$/SpringServer/SpringServer.iml" filepath="$PROJECT_DIR$/SpringServer/SpringServer.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/labs1.iml" filepath="$PROJECT_DIR$/.idea/labs1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/microservices_labs1.iml" filepath="$PROJECT_DIR$/.idea/microservices_labs1.iml" />
     </modules>
   </component>
 </project>
