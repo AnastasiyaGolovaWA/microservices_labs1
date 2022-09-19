@@ -1,5 +1,6 @@
 package com.example.springclient.controllers;
 
+import com.example.springclient.config.ConfigurationService;
 import com.example.springclient.models.UserDTO;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
@@ -18,8 +19,6 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,35 +30,10 @@ import java.util.Map;
 
 @RequestMapping(value = "/users")
 @RestController
-@RefreshScope
 public class UserController {
     @Autowired
-    private Environment env;
+    ConfigurationService configurationService;
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-
-    public String getAuthServerUrl() {
-        return env.getProperty("keycloak.auth-server-url");
-    }
-
-    public String getRealm() {
-        return env.getProperty("keycloak.realm");
-    }
-
-    public String getClientId() {
-        return env.getProperty("keycloak.resource");
-    }
-
-    public String getRoleUser() {
-        return env.getProperty("keycloak.security-constraints[0].authRoles[0]");
-    }
-
-    public String getRoleAdmin() {
-        return env.getProperty("keycloak.security-constraints[1].authRoles[0]");
-    }
-
-    public String getClientSecret() {
-        return env.getProperty("clientSecret");
-    }
 
     @RequestMapping(value = "/admin", method = RequestMethod.GET)
     public ResponseEntity<String> getAdmin() {
@@ -69,7 +43,7 @@ public class UserController {
     @PostMapping(path = "/create")
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
 
-        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(getAuthServerUrl())
+        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(configurationService.getAuthServerUrl())
                 .grantType(OAuth2Constants.PASSWORD).realm("master").clientId("admin-cli")
                 .username("admin").password("admin")
                 .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
@@ -84,7 +58,7 @@ public class UserController {
         user.setLastName(userDTO.getLastname());
         user.setEmail(userDTO.getEmail());
 
-        RealmResource realmResource = keycloak.realm(getRealm());
+        RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
 
         Response response = usersResource.create(user);
@@ -105,7 +79,7 @@ public class UserController {
 
             userResource.resetPassword(passwordCred);
 
-            RoleRepresentation realmRoleUser = realmResource.roles().get(getRoleUser()).toRepresentation();
+            RoleRepresentation realmRoleUser = realmResource.roles().get(configurationService.getRoleUser()).toRepresentation();
 
             userResource.roles().realmLevel().add(Arrays.asList(realmRoleUser));
         }
@@ -116,10 +90,10 @@ public class UserController {
     public ResponseEntity<?> signin(@RequestBody UserDTO userDTO) {
 
         Map<String, Object> clientCredentials = new HashMap<>();
-        clientCredentials.put("secret", getClientSecret());
+        clientCredentials.put("secret", configurationService.getClientSecret());
 
         Configuration configuration =
-                new Configuration(getAuthServerUrl(), getRealm(), getClientId(), clientCredentials, null);
+                new Configuration(configurationService.getAuthServerUrl(), configurationService.getRealm(), configurationService.getClientId(), clientCredentials, null);
         AuthzClient authzClient = AuthzClient.create(configuration);
 
         AccessTokenResponse response =
