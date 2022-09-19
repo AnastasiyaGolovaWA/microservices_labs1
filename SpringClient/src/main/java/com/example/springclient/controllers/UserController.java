@@ -1,11 +1,5 @@
 package com.example.springclient.controllers;
 
-import java.security.Key;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import javax.ws.rs.core.Response;
-
 import com.example.springclient.models.UserDTO;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
@@ -23,23 +17,49 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import javax.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RequestMapping(value = "/users")
 @RestController
+@RefreshScope
 public class UserController {
-
+    @Autowired
+    private Environment env;
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    private String authServerUrl = "http://localhost:8484/auth";
-    private String realm = "first_realm";
-    private String clientId = "keycloak-app";
-    private String role = "user";
-    //Get client secret from the Keycloak admin console (in the credential tab)
-    private String clientSecret = "QaJzlRQ3XTofzcCrx1HB3LwuoQWxqCdo";
+    public String getAuthServerUrl() {
+        return env.getProperty("keycloak.auth-server-url");
+    }
+
+    public String getRealm() {
+        return env.getProperty("keycloak.realm");
+    }
+
+    public String getClientId() {
+        return env.getProperty("keycloak.resource");
+    }
+
+    public String getRoleUser() {
+        return env.getProperty("keycloak.security-constraints[0].authRoles[0]");
+    }
+
+    public String getRoleAdmin() {
+        return env.getProperty("keycloak.security-constraints[1].authRoles[0]");
+    }
+
+    public String getClientSecret() {
+        return env.getProperty("clientSecret");
+    }
 
     @RequestMapping(value = "/admin", method = RequestMethod.GET)
     public ResponseEntity<String> getAdmin() {
@@ -49,7 +69,7 @@ public class UserController {
     @PostMapping(path = "/create")
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
 
-        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(authServerUrl)
+        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(getAuthServerUrl())
                 .grantType(OAuth2Constants.PASSWORD).realm("master").clientId("admin-cli")
                 .username("admin").password("admin")
                 .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
@@ -64,8 +84,7 @@ public class UserController {
         user.setLastName(userDTO.getLastname());
         user.setEmail(userDTO.getEmail());
 
-        // Get realm
-        RealmResource realmResource = keycloak.realm(realm);
+        RealmResource realmResource = keycloak.realm(getRealm());
         UsersResource usersResource = realmResource.users();
 
         Response response = usersResource.create(user);
@@ -77,7 +96,6 @@ public class UserController {
             log.info("Created userId {}", userId);
 
 
-            // create password credential
             CredentialRepresentation passwordCred = new CredentialRepresentation();
             passwordCred.setTemporary(false);
             passwordCred.setType(CredentialRepresentation.PASSWORD);
@@ -85,13 +103,10 @@ public class UserController {
 
             UserResource userResource = usersResource.get(userId);
 
-            // Set password credential
             userResource.resetPassword(passwordCred);
 
-            // Get realm role student
-            RoleRepresentation realmRoleUser = realmResource.roles().get(role).toRepresentation();
+            RoleRepresentation realmRoleUser = realmResource.roles().get(getRoleUser()).toRepresentation();
 
-            // Assign realm role student to user
             userResource.roles().realmLevel().add(Arrays.asList(realmRoleUser));
         }
         return ResponseEntity.ok(userDTO);
@@ -101,11 +116,10 @@ public class UserController {
     public ResponseEntity<?> signin(@RequestBody UserDTO userDTO) {
 
         Map<String, Object> clientCredentials = new HashMap<>();
-        clientCredentials.put("secret", clientSecret);
-        //clientCredentials.put("admin", "root");
+        clientCredentials.put("secret", getClientSecret());
 
         Configuration configuration =
-                new Configuration(authServerUrl, realm, clientId, clientCredentials, null);
+                new Configuration(getAuthServerUrl(), getRealm(), getClientId(), clientCredentials, null);
         AuthzClient authzClient = AuthzClient.create(configuration);
 
         AccessTokenResponse response =
