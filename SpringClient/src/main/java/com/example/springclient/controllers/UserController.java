@@ -14,7 +14,6 @@ import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,9 +88,22 @@ public class UserController {
 
             userResource.resetPassword(passwordCred);
 
-            RoleRepresentation realmRoleUser = keycloak.realm(configurationService.getRealm()).roles().get(userDTO.getRole()).toRepresentation();
+            /*RoleMappingResource roleMappingResource = realmResource
+                    .users()
+                    .get(user.getId())
+                    .roles();
 
-            userResource.roles().realmLevel().add(Arrays.asList(realmRoleUser));
+            List<RoleRepresentation> clientRolesToAdd = new ArrayList<RoleRepresentation>();
+            RoleRepresentation clientRole_ = realmResource
+                    .clients()
+                    .get("keycloak-app")
+                    .roles()
+                    .get("user")
+                    .toRepresentation();
+            clientRolesToAdd.add(clientRole_);
+
+            roleMappingResource.clientLevel("keycloak-app").add(clientRolesToAdd);*/
+            
         }
         System.out.println(userDTO1);
         return ResponseEntity.ok(userDTO);
