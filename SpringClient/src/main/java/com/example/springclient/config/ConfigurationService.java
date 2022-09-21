@@ -26,14 +26,6 @@ public class ConfigurationService {
         return env.getProperty("keycloak.resource");
     }
 
-    public String getRoleUser() {
-        return env.getProperty("keycloak.security-constraints[0].authRoles[0]");
-    }
-
-    public String getRoleAdmin() {
-        return env.getProperty("keycloak.security-constraints[1].authRoles[0]");
-    }
-
     public String getClientSecret() {
         return env.getProperty("clientSecret");
     }

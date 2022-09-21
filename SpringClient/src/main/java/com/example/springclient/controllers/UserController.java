@@ -50,7 +50,7 @@ public class UserController {
 
         keycloak.tokenManager().getAccessToken();
 
-
+        UserDTO userDTO1 = new UserDTO();
         UserRepresentation user = new UserRepresentation();
         user.setEnabled(true);
         user.setUsername(userDTO.getUsername());
@@ -63,11 +63,20 @@ public class UserController {
 
         Response response = usersResource.create(user);
 
+        userDTO1.setFirstname(user.getUsername());
+        userDTO1.setLastname(user.getLastName());
+        userDTO1.setEmail(user.getEmail());
+        userDTO1.setId(user.getId());
+        userDTO1.setUsername(user.getUsername());
+        userDTO1.setPassword(userDTO.getPassword());
+        userDTO1.setRole(userDTO.getRole());
+
         if (response.getStatus() == 201) {
 
             String userId = CreatedResponseUtil.getCreatedId(response);
 
             log.info("Created userId {}", userId);
+            System.out.println("Created userId {}" + userId);
 
 
             CredentialRepresentation passwordCred = new CredentialRepresentation();
@@ -79,10 +88,11 @@ public class UserController {
 
             userResource.resetPassword(passwordCred);
 
-            RoleRepresentation realmRoleUser = realmResource.roles().get(configurationService.getRoleUser()).toRepresentation();
+            RoleRepresentation realmRoleUser = realmResource.roles().get(userDTO.getRole()).toRepresentation();
 
             userResource.roles().realmLevel().add(Arrays.asList(realmRoleUser));
         }
+        System.out.println(userDTO1);
         return ResponseEntity.ok(userDTO);
     }
 
