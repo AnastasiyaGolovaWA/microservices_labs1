@@ -90,8 +90,6 @@ public class UserController {
 
             userResource.resetPassword(passwordCred);
 
-            //RoleRepresentation realmRoleUser = realmResource.roles().get(userDTO.getRole()).toRepresentation();
-
             RoleRepresentation realmRoleUser = keycloak.realm(configurationService.getRealm()).roles().get(userDTO.getRole()).toRepresentation();
 
             userResource.roles().realmLevel().add(Arrays.asList(realmRoleUser));
