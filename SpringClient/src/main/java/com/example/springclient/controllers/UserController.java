@@ -34,19 +34,19 @@ public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    @RequestMapping(value = "/admin", method = RequestMethod.GET)
-    public ResponseEntity<String> getAdmin() {
-        return ResponseEntity.ok("Hello Admin");
-    }
-
-    @GetMapping("/client/{username}")
-    public ResponseEntity<?> getClientInfo(@PathVariable String username) {
+    public Keycloak getToken() {
         Keycloak keycloak = KeycloakBuilder.builder().serverUrl(configurationService.getAuthServerUrl())
                 .grantType(OAuth2Constants.PASSWORD).realm("master").clientId("admin-cli")
                 .username("admin").password("admin")
                 .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
 
         keycloak.tokenManager().getAccessToken();
+        return keycloak;
+    }
+
+    @GetMapping("/client/{username}")
+    public ResponseEntity<?> getClientInfo(@PathVariable String username) {
+        Keycloak keycloak = getToken();
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
         System.out.println("username {}" + username);
@@ -54,7 +54,6 @@ public class UserController {
                 .users()
                 .search(username)
                 .get(0);
-        UserResource userResource = usersResource.get(user.getId());
         UserDTO userDTO = new UserDTO();
         userDTO.setFirstname(user.getFirstName());
         userDTO.setLastname(user.getLastName());
@@ -67,27 +66,32 @@ public class UserController {
 
     @DeleteMapping(path = "/delete/{userId}")
     public String deleteUser(@PathVariable("userId") String userId) {
-        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(configurationService.getAuthServerUrl())
-                .grantType(OAuth2Constants.PASSWORD).realm("master").clientId("admin-cli")
-                .username("admin").password("admin")
-                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
-
-        keycloak.tokenManager().getAccessToken();
+        Keycloak keycloak = getToken();
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
         usersResource.get(userId).remove();
         return "User Deleted Successfully.";
     }
 
+    @PutMapping(path = "/update/{userId}")
+    public String updateUser(@PathVariable("userId") String userId, @RequestBody UserDTO userDTO) {
+        Keycloak keycloak = getToken();
+        RealmResource realmResource = keycloak.realm(configurationService.getRealm());
+        UsersResource usersResource = realmResource.users();
+
+        UserRepresentation user = new UserRepresentation();
+        user.setEnabled(true);
+        user.setFirstName(userDTO.getFirstname());
+        user.setLastName(userDTO.getLastname());
+        user.setEmail(userDTO.getEmail());
+
+        usersResource.get(userId).update(user);
+        return "User Details Updated Successfully.";
+    }
+
+
     @PostMapping(path = "/create")
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
-
-        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(configurationService.getAuthServerUrl())
-                .grantType(OAuth2Constants.PASSWORD).realm("master").clientId("admin-cli")
-                .username("admin").password("admin")
-                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
-
-        keycloak.tokenManager().getAccessToken();
 
         UserDTO userDTO1 = new UserDTO();
         UserRepresentation user = new UserRepresentation();
@@ -96,6 +100,7 @@ public class UserController {
         user.setFirstName(userDTO.getFirstname());
         user.setLastName(userDTO.getLastname());
         user.setEmail(userDTO.getEmail());
+        Keycloak keycloak = getToken();
 
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
@@ -128,23 +133,6 @@ public class UserController {
             UserResource userResource = usersResource.get(userId);
 
             userResource.resetPassword(passwordCred);
-
-            /*RoleMappingResource roleMappingResource = realmResource
-                    .users()
-                    .get(user.getId())
-                    .roles();
-
-            List<RoleRepresentation> clientRolesToAdd = new ArrayList<RoleRepresentation>();
-            RoleRepresentation clientRole_ = realmResource
-                    .clients()
-                    .get("keycloak-app")
-                    .roles()
-                    .get("user")
-                    .toRepresentation();
-            clientRolesToAdd.add(clientRole_);
-
-            roleMappingResource.clientLevel("keycloak-app").add(clientRolesToAdd);*/
-
         }
         System.out.println(userDTO1);
         return ResponseEntity.ok(userDTO);
