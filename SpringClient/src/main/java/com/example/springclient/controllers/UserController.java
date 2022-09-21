@@ -78,6 +78,8 @@ public class UserController {
             log.info("Created userId {}", userId);
             System.out.println("Created userId {}" + userId);
 
+            userDTO1.setKeycloak_id(userId);
+
 
             CredentialRepresentation passwordCred = new CredentialRepresentation();
             passwordCred.setTemporary(false);
@@ -88,7 +90,9 @@ public class UserController {
 
             userResource.resetPassword(passwordCred);
 
-            RoleRepresentation realmRoleUser = realmResource.roles().get(userDTO.getRole()).toRepresentation();
+            //RoleRepresentation realmRoleUser = realmResource.roles().get(userDTO.getRole()).toRepresentation();
+
+            RoleRepresentation realmRoleUser = keycloak.realm(configurationService.getRealm()).roles().get(userDTO.getRole()).toRepresentation();
 
             userResource.roles().realmLevel().add(Arrays.asList(realmRoleUser));
         }
