@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -75,6 +74,13 @@ public class UserController {
         user.setLastName(userDTO.getLastname());
         user.setEmail(userDTO.getEmail());
 
+        CredentialRepresentation passwordCred = new CredentialRepresentation();
+        passwordCred.setTemporary(false);
+        passwordCred.setType(CredentialRepresentation.PASSWORD);
+        passwordCred.setValue(userDTO.getPassword());
+        UserResource userResource = usersResource.get(userId);
+        userResource.resetPassword(passwordCred);
+        
         usersResource.get(userId).update(user);
         return "User Details Updated Successfully.";
     }
