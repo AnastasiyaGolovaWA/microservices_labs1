@@ -39,6 +39,8 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .antMatchers("/users/admin").hasRole("admin")
                 .antMatchers("/users/user").hasRole("user")
                 .antMatchers("/users/signin").permitAll()
+                .antMatchers("/users/client/{username}").permitAll()
+                .antMatchers("/users//delete/{userId}").permitAll()
                 .anyRequest().authenticated();
 
     }

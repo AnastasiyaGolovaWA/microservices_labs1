@@ -31,11 +31,52 @@ import java.util.Map;
 public class UserController {
     @Autowired
     ConfigurationService configurationService;
+
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     @RequestMapping(value = "/admin", method = RequestMethod.GET)
     public ResponseEntity<String> getAdmin() {
         return ResponseEntity.ok("Hello Admin");
+    }
+
+    @GetMapping("/client/{username}")
+    public ResponseEntity<?> getClientInfo(@PathVariable String username) {
+        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(configurationService.getAuthServerUrl())
+                .grantType(OAuth2Constants.PASSWORD).realm("master").clientId("admin-cli")
+                .username("admin").password("admin")
+                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
+
+        keycloak.tokenManager().getAccessToken();
+        RealmResource realmResource = keycloak.realm(configurationService.getRealm());
+        UsersResource usersResource = realmResource.users();
+        System.out.println("username {}" + username);
+        UserRepresentation user = realmResource
+                .users()
+                .search(username)
+                .get(0);
+        UserResource userResource = usersResource.get(user.getId());
+        UserDTO userDTO = new UserDTO();
+        userDTO.setFirstname(user.getFirstName());
+        userDTO.setLastname(user.getLastName());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setKeycloak_id(user.getId());
+        userDTO.setUsername(user.getUsername());
+
+        return ResponseEntity.ok(userDTO);
+    }
+
+    @DeleteMapping(path = "/delete/{userId}")
+    public String deleteUser(@PathVariable("userId") String userId) {
+        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(configurationService.getAuthServerUrl())
+                .grantType(OAuth2Constants.PASSWORD).realm("master").clientId("admin-cli")
+                .username("admin").password("admin")
+                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
+
+        keycloak.tokenManager().getAccessToken();
+        RealmResource realmResource = keycloak.realm(configurationService.getRealm());
+        UsersResource usersResource = realmResource.users();
+        usersResource.get(userId).remove();
+        return "User Deleted Successfully.";
     }
 
     @PostMapping(path = "/create")
@@ -103,7 +144,7 @@ public class UserController {
             clientRolesToAdd.add(clientRole_);
 
             roleMappingResource.clientLevel("keycloak-app").add(clientRolesToAdd);*/
-            
+
         }
         System.out.println(userDTO1);
         return ResponseEntity.ok(userDTO);

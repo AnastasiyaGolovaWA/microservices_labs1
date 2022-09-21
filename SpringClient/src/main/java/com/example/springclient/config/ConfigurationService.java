@@ -29,4 +29,5 @@ public class ConfigurationService {
     public String getClientSecret() {
         return env.getProperty("clientSecret");
     }
+
 }
