@@ -100,13 +100,13 @@ public class UserController {
                 .clients()
                 .get(client_id)
                 .roles()
-                .get("user")
+                .get(userDTO.getRole())
                 .toRepresentation()
         );
         userResource1.roles().clientLevel(client_id).add(roleToAdd);
 
         usersResource.get(userId).update(user);
-        return "User Details Updated Successfully.";
+        return "User Details Updated Successfully";
     }
 
 
@@ -149,10 +149,29 @@ public class UserController {
             passwordCred.setTemporary(false);
             passwordCred.setType(CredentialRepresentation.PASSWORD);
             passwordCred.setValue(userDTO.getPassword());
-
             UserResource userResource = usersResource.get(userId);
-
             userResource.resetPassword(passwordCred);
+
+            String client_id = keycloak
+                    .realm(configurationService.getRealm())
+                    .clients()
+                    .findByClientId(configurationService.getClientId())
+                    .get(0)
+                    .getId();
+            UserResource userResource1 = keycloak
+                    .realm(configurationService.getRealm())
+                    .users()
+                    .get(userId);
+            List<RoleRepresentation> roleToAdd = new LinkedList<>();
+            roleToAdd.add(keycloak
+                    .realm(configurationService.getRealm())
+                    .clients()
+                    .get(client_id)
+                    .roles()
+                    .get(userDTO.getRole())
+                    .toRepresentation()
+            );
+            userResource1.roles().clientLevel(client_id).add(roleToAdd);
         }
         System.out.println(userDTO1);
         return ResponseEntity.ok(userDTO);
