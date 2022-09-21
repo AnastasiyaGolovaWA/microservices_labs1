@@ -109,6 +109,25 @@ public class UserController {
         return "User Details Updated Successfully";
     }
 
+    @PutMapping(path = "/remove_role/{userId}")
+    public String removeRole(@PathVariable("userId") String userId) {
+        Keycloak keycloak = getToken();
+        List<RoleRepresentation> roleToAdd = new LinkedList<>();
+        UserResource userResource = keycloak
+                .realm(configurationService.getRealm())
+                .users()
+                .get(userId);
+        String client_id = keycloak
+                .realm(configurationService.getRealm())
+                .clients()
+                .findByClientId(configurationService.getClientId())
+                .get(0)
+                .getId();
+        userResource.roles().clientLevel(client_id).listAll().size();
+        System.out.println(userResource.roles().clientLevel(client_id).listAll().size());
+        return "User Role Removed Successfully";
+    }
+
 
     @PostMapping(path = "/create")
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
