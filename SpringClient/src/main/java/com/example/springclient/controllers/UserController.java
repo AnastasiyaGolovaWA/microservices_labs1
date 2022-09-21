@@ -14,6 +14,7 @@ import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -80,7 +83,28 @@ public class UserController {
         passwordCred.setValue(userDTO.getPassword());
         UserResource userResource = usersResource.get(userId);
         userResource.resetPassword(passwordCred);
-        
+
+        String client_id = keycloak
+                .realm(configurationService.getRealm())
+                .clients()
+                .findByClientId(configurationService.getClientId())
+                .get(0)
+                .getId();
+        UserResource userResource1 = keycloak
+                .realm(configurationService.getRealm())
+                .users()
+                .get(userId);
+        List<RoleRepresentation> roleToAdd = new LinkedList<>();
+        roleToAdd.add(keycloak
+                .realm(configurationService.getRealm())
+                .clients()
+                .get(client_id)
+                .roles()
+                .get("user")
+                .toRepresentation()
+        );
+        userResource1.roles().clientLevel(client_id).add(roleToAdd);
+
         usersResource.get(userId).update(user);
         return "User Details Updated Successfully.";
     }
