@@ -2,6 +2,7 @@ package com.example.springclient.controllers;
 
 import com.example.springclient.config.ConfigurationService;
 import com.example.springclient.models.UserDTO;
+import com.example.springclient.service.UserService;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -33,8 +34,13 @@ import java.util.stream.Stream;
 @RequestMapping(value = "/users")
 @RestController
 public class UserController {
+    private UserService userService;
     @Autowired
     ConfigurationService configurationService;
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
@@ -215,6 +221,7 @@ public class UserController {
             );
             userResource1.roles().clientLevel(client_id).add(roleToAdd);
         }
+        userService.save(userDTO1);
         System.out.println(userDTO1);
         return ResponseEntity.ok(userDTO);
     }
