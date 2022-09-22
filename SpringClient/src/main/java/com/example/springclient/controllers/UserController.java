@@ -2,7 +2,9 @@ package com.example.springclient.controllers;
 
 import com.example.springclient.config.ConfigurationService;
 import com.example.springclient.models.UserDTO;
+import com.example.springclient.repository.UserRepository;
 import com.example.springclient.service.UserService;
+import org.h2.engine.User;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -35,8 +37,10 @@ import java.util.stream.Stream;
 @RestController
 public class UserController {
     private UserService userService;
+
     @Autowired
     ConfigurationService configurationService;
+
     @Autowired
     public void setUserService(UserService userService) {
         this.userService = userService;
@@ -77,7 +81,7 @@ public class UserController {
         Keycloak keycloak = getToken();
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         List<UserRepresentation> list = realmResource.users().list();
-        return   list.stream().filter(x -> x.getUsername().startsWith(litter));
+        return list.stream().filter(x -> x.getUsername().startsWith(litter));
     }
 
     @PutMapping(path = "/update/{userId}")
@@ -92,6 +96,11 @@ public class UserController {
         user.setLastName(userDTO.getLastname());
         user.setEmail(userDTO.getEmail());
 
+        UserResource userResource1 = keycloak
+                .realm(configurationService.getRealm())
+                .users()
+                .get(userId);
+
         CredentialRepresentation passwordCred = new CredentialRepresentation();
         passwordCred.setTemporary(false);
         passwordCred.setType(CredentialRepresentation.PASSWORD);
@@ -99,16 +108,26 @@ public class UserController {
         UserResource userResource = usersResource.get(userId);
         userResource.resetPassword(passwordCred);
 
+        UserRepresentation obj = usersResource.get(userId).toRepresentation();
+
+        final UserDTO model = userService.findByUsername(obj.getUsername());
+        System.out.println(model);
+        model.setFirstname(userDTO.getFirstname());
+        model.setLastname(userDTO.getLastname());
+        model.setEmail(userDTO.getEmail());
+        model.setRole(userDTO.getRole());
+        model.setPassword(userDTO.getPassword());
+        model.setUsername(obj.getUsername());
+        model.setKeycloak_id(obj.getId());
+        userService.save(model);
+
         String client_id = keycloak
                 .realm(configurationService.getRealm())
                 .clients()
                 .findByClientId(configurationService.getClientId())
                 .get(0)
                 .getId();
-        UserResource userResource1 = keycloak
-                .realm(configurationService.getRealm())
-                .users()
-                .get(userId);
+
         List<RoleRepresentation> roleToAdd = new LinkedList<>();
         roleToAdd.add(keycloak
                 .realm(configurationService.getRealm())
@@ -121,6 +140,7 @@ public class UserController {
         userResource1.roles().clientLevel(client_id).add(roleToAdd);
 
         usersResource.get(userId).update(user);
+
         return "User Details Updated Successfully";
     }
 
