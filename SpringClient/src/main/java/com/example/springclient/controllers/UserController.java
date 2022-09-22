@@ -22,15 +22,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.core.Response;
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 
 @RequestMapping(value = "/users")
@@ -67,6 +64,14 @@ public class UserController {
         UsersResource usersResource = realmResource.users();
         UserRepresentation user = usersResource.get(userId).toRepresentation();
         return user;
+    }
+
+    @GetMapping(path = "/findAllUsers/{litter}")
+    public Stream<UserRepresentation> findAllUsers(@PathVariable("litter") String litter) {
+        Keycloak keycloak = getToken();
+        RealmResource realmResource = keycloak.realm(configurationService.getRealm());
+        List<UserRepresentation> list = realmResource.users().list();
+        return   list.stream().filter(x -> x.getUsername().startsWith(litter));
     }
 
     @PutMapping(path = "/update/{userId}")
@@ -116,7 +121,10 @@ public class UserController {
     @PutMapping(path = "/remove_role/{userId}")
     public String removeRole(@PathVariable("userId") String userId) {
         Keycloak keycloak = getToken();
-        List<RoleRepresentation> roleToAdd = new LinkedList<>();
+        RealmResource realmResource = keycloak.realm(configurationService.getRealm());
+        UsersResource usersResource = realmResource.users();
+
+        UserRepresentation user = new UserRepresentation();
         UserResource userResource = keycloak
                 .realm(configurationService.getRealm())
                 .users()
@@ -127,7 +135,9 @@ public class UserController {
                 .findByClientId(configurationService.getClientId())
                 .get(0)
                 .getId();
-        userResource.roles().clientLevel(client_id).listAll().size();
+        userResource.roles().clientLevel(client_id).listAll().clear();
+        usersResource.get(userId).update(user);
+        System.out.println(user);
         System.out.println(userResource.roles().clientLevel(client_id).listAll().size());
         return "User Role Removed Successfully";
     }
