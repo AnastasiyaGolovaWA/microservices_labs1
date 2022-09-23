@@ -27,10 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.core.Response;
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 
@@ -86,7 +83,7 @@ public class UserController {
     }
 
     @PutMapping(path = "/update/{userId}")
-    public String updateUser(@PathVariable("userId") String userId, @RequestBody UserDTO userDTO) {
+    public String updateUser(@PathVariable("userId") String userId, @RequestBody UserDTO userDTO) throws IllegalAccessException {
         Keycloak keycloak = getToken();
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
@@ -101,23 +98,34 @@ public class UserController {
                 .realm(configurationService.getRealm())
                 .users()
                 .get(userId);
-
-        CredentialRepresentation passwordCred = new CredentialRepresentation();
-        passwordCred.setTemporary(false);
-        passwordCred.setType(CredentialRepresentation.PASSWORD);
-        passwordCred.setValue(userDTO.getPassword());
-        UserResource userResource = usersResource.get(userId);
-        userResource.resetPassword(passwordCred);
+        if (!Objects.equals(userDTO.getPassword(), null)) {
+            CredentialRepresentation passwordCred = new CredentialRepresentation();
+            passwordCred.setTemporary(false);
+            passwordCred.setType(CredentialRepresentation.PASSWORD);
+            passwordCred.setValue(userDTO.getPassword());
+            UserResource userResource = usersResource.get(userId);
+            userResource.resetPassword(passwordCred);
+        }
 
         UserRepresentation obj = usersResource.get(userId).toRepresentation();
 
         final UserDTO model = userService.findByUsername(obj.getUsername());
         System.out.println(model);
-        model.setFirstname(userDTO.getFirstname());
-        model.setLastname(userDTO.getLastname());
-        model.setEmail(userDTO.getEmail());
-        model.setRole(userDTO.getRole());
-        model.setPassword(userDTO.getPassword());
+        if (userDTO.getFirstname() != null) {
+            model.setFirstname(userDTO.getFirstname());
+        }
+        if (userDTO.getLastname() != null) {
+            model.setLastname(userDTO.getLastname());
+        }
+        if (userDTO.getEmail() != null) {
+            model.setEmail(userDTO.getEmail());
+        }
+        if (userDTO.getRole() != null) {
+            model.setRole(userDTO.getRole());
+        }
+        if (userDTO.getPassword() != null) {
+            model.setPassword(userDTO.getPassword());
+        }
         model.setUsername(obj.getUsername());
         model.setKeycloak_id(obj.getId());
         userService.save(model);
@@ -138,8 +146,9 @@ public class UserController {
                 .get(userDTO.getRole())
                 .toRepresentation()
         );
-        userResource1.roles().clientLevel(client_id).add(roleToAdd);
-
+        userResource1.roles().
+                clientLevel(client_id).
+                add(roleToAdd);
         usersResource.get(userId).update(user);
 
         return "User Details Updated Successfully";
@@ -152,20 +161,36 @@ public class UserController {
         UsersResource usersResource = realmResource.users();
 
         UserRepresentation user = new UserRepresentation();
-        UserResource userResource = keycloak
+
+        UserResource userResource1 = keycloak
                 .realm(configurationService.getRealm())
                 .users()
                 .get(userId);
+
         String client_id = keycloak
                 .realm(configurationService.getRealm())
                 .clients()
                 .findByClientId(configurationService.getClientId())
                 .get(0)
                 .getId();
-        userResource.roles().clientLevel(client_id).listAll().clear();
+
+        List<RoleRepresentation> roleToAdd = new LinkedList<>();
+        roleToAdd.add(keycloak
+                .realm(configurationService.getRealm())
+                .clients()
+                .get(client_id)
+                .roles()
+                .get(userResource1.roles().clientLevel(client_id).listAll().get(0).getName())
+                .toRepresentation());
+        userResource1.roles().clientLevel(client_id).remove(roleToAdd);
+        System.out.println(roleToAdd);
         usersResource.get(userId).update(user);
-        System.out.println(user);
-        System.out.println(userResource.roles().clientLevel(client_id).listAll().size());
+        System.out.println(userResource1.roles().clientLevel(client_id).listAll());
+        UserRepresentation obj = usersResource.get(userId).toRepresentation();
+        final UserDTO model = userService.findByUsername(obj.getUsername());
+        System.out.println(model);
+        model.setRole(null);
+        userService.save(model);
         return "User Role Removed Successfully";
     }
 
