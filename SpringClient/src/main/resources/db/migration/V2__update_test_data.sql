@@ -12,3 +12,4 @@ CREATE TABLE users
     keycloak_id varchar(200),
     primary key (id)
 );
+
