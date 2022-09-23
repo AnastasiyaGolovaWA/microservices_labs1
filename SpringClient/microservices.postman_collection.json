@@ -1,0 +1,324 @@
+{
+	"info": {
+		"_postman_id": "c8bb26ef-7258-444d-bd8a-4d410e5839c1",
+		"name": "microservices",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "admin authorize",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable(\"bearer_token\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"admin\",\r\n    \"password\":\"root\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/users/signin",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user authorize",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable(\"bearer_token\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"user\",\r\n    \"password\":\"root\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/users/signin",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create user (only for admin)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearer_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"postgres\",\r\n    \"password\":\"root\",\r\n    \"email\":\"postgres@gmail.com\",\r\n    \"firstname\":\"postgres\",\r\n    \"lastname\":\"postgres\",\r\n    \"role\":\"user\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/users/create",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearer_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\":\"ttt\",\r\n    \"firstname\":\"ttt\",\r\n    \"lastname\":\"ttt\",\r\n    \"password\":\"ttt\",\r\n    \"role\":\"user\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/users/update/ceb91f27-f720-47c3-8b75-3697581569ed",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"update",
+						"ceb91f27-f720-47c3-8b75-3697581569ed"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "remove role",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearer_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\":\"gdg\",\r\n    \"firstname\":\"gddg\",\r\n    \"lastname\":\"gddg\",\r\n    \"password\":\"abcd\",\r\n    \"role\":\"user\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/users/remove_role/6d80b8ad-0084-433d-a1b0-9ce3dfa02ee2",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"remove_role",
+						"6d80b8ad-0084-433d-a1b0-9ce3dfa02ee2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "users delete",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearer_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/users/delete/0fbfd1e7-7171-4b61-b07c-59950ab32732",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"delete",
+						"0fbfd1e7-7171-4b61-b07c-59950ab32732"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "find user by id",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearer_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/users/find/384d06fe-0bc5-4762-977f-7b195b054b59",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"find",
+						"384d06fe-0bc5-4762-977f-7b195b054b59"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "info for me",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearer_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/users/userinfo",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"userinfo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "find all users",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearer_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/users/findAllUsers/a",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"findAllUsers",
+						"a"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
