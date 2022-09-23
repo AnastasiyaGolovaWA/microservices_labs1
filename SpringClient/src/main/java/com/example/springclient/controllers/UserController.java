@@ -2,13 +2,11 @@ package com.example.springclient.controllers;
 
 import com.example.springclient.config.ConfigurationService;
 import com.example.springclient.models.UserDTO;
+import com.example.springclient.service.KeycloakService;
 import com.example.springclient.service.UserService;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -16,7 +14,6 @@ import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;
-import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
@@ -36,6 +33,8 @@ import java.util.stream.Stream;
 public class UserController {
     private UserService userService;
 
+    private KeycloakService keycloakService;
+
     @Autowired
     ConfigurationService configurationService;
 
@@ -44,21 +43,16 @@ public class UserController {
         this.userService = userService;
     }
 
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
-
-    public Keycloak getToken() {
-        Keycloak keycloak = KeycloakBuilder.builder().serverUrl(configurationService.getAuthServerUrl())
-                .grantType(OAuth2Constants.PASSWORD).realm(configurationService.getMasterRealm()).clientId(configurationService.getMasterClientId())
-                .username(configurationService.getMasterUsername()).password(configurationService.getMasterPassword())
-                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
-
-        keycloak.tokenManager().getAccessToken();
-        return keycloak;
+    @Autowired
+    public void setKeycloakService(KeycloakService keycloakService) {
+        this.keycloakService = keycloakService;
     }
+
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     @DeleteMapping(path = "/delete/{userId}")
     public String deleteUser(@PathVariable("userId") String userId) {
-        Keycloak keycloak = getToken();
+        Keycloak keycloak = keycloakService.getToken();
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
         usersResource.get(userId).remove();
@@ -67,7 +61,7 @@ public class UserController {
 
     @GetMapping(path = "/find/{userId}")
     public UserRepresentation findUserById(@PathVariable("userId") String userId) {
-        Keycloak keycloak = getToken();
+        Keycloak keycloak = keycloakService.getToken();
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
         UserRepresentation user = usersResource.get(userId).toRepresentation();
@@ -76,7 +70,7 @@ public class UserController {
 
     @GetMapping(path = "/findAllUsers/{litter}")
     public Stream<UserRepresentation> findAllUsers(@PathVariable("litter") String litter) {
-        Keycloak keycloak = getToken();
+        Keycloak keycloak = keycloakService.getToken();
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         List<UserRepresentation> list = realmResource.users().list();
         return list.stream().filter(x -> x.getUsername().startsWith(litter));
@@ -84,7 +78,7 @@ public class UserController {
 
     @PutMapping(path = "/update/{userId}")
     public String updateUser(@PathVariable("userId") String userId, @RequestBody UserDTO userDTO) throws IllegalAccessException {
-        Keycloak keycloak = getToken();
+        Keycloak keycloak = keycloakService.getToken();
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
 
@@ -99,12 +93,7 @@ public class UserController {
                 .users()
                 .get(userId);
         if (!Objects.equals(userDTO.getPassword(), null)) {
-            CredentialRepresentation passwordCred = new CredentialRepresentation();
-            passwordCred.setTemporary(false);
-            passwordCred.setType(CredentialRepresentation.PASSWORD);
-            passwordCred.setValue(userDTO.getPassword());
-            UserResource userResource = usersResource.get(userId);
-            userResource.resetPassword(passwordCred);
+            keycloakService.setPassword(userDTO, usersResource, userId);
         }
 
         UserRepresentation obj = usersResource.get(userId).toRepresentation();
@@ -130,12 +119,7 @@ public class UserController {
         model.setKeycloak_id(obj.getId());
         userService.save(model);
 
-        String client_id = keycloak
-                .realm(configurationService.getRealm())
-                .clients()
-                .findByClientId(configurationService.getClientId())
-                .get(0)
-                .getId();
+        String client_id = keycloakService.getClientId(keycloak);
 
         List<RoleRepresentation> roleToAdd = new LinkedList<>();
         roleToAdd.add(keycloak
@@ -156,7 +140,7 @@ public class UserController {
 
     @PutMapping(path = "/remove_role/{userId}")
     public String removeRole(@PathVariable("userId") String userId) {
-        Keycloak keycloak = getToken();
+        Keycloak keycloak = keycloakService.getToken();
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
 
@@ -167,12 +151,7 @@ public class UserController {
                 .users()
                 .get(userId);
 
-        String client_id = keycloak
-                .realm(configurationService.getRealm())
-                .clients()
-                .findByClientId(configurationService.getClientId())
-                .get(0)
-                .getId();
+        String client_id = keycloakService.getClientId(keycloak);
 
         List<RoleRepresentation> roleToAdd = new LinkedList<>();
         roleToAdd.add(keycloak
@@ -215,7 +194,7 @@ public class UserController {
         user.setFirstName(userDTO.getFirstname());
         user.setLastName(userDTO.getLastname());
         user.setEmail(userDTO.getEmail());
-        Keycloak keycloak = getToken();
+        Keycloak keycloak = keycloakService.getToken();
 
         RealmResource realmResource = keycloak.realm(configurationService.getRealm());
         UsersResource usersResource = realmResource.users();
@@ -239,19 +218,9 @@ public class UserController {
             userDTO1.setKeycloak_id(userId);
 
 
-            CredentialRepresentation passwordCred = new CredentialRepresentation();
-            passwordCred.setTemporary(false);
-            passwordCred.setType(CredentialRepresentation.PASSWORD);
-            passwordCred.setValue(userDTO.getPassword());
-            UserResource userResource = usersResource.get(userId);
-            userResource.resetPassword(passwordCred);
+            keycloakService.setPassword(userDTO, usersResource, userId);
 
-            String client_id = keycloak
-                    .realm(configurationService.getRealm())
-                    .clients()
-                    .findByClientId(configurationService.getClientId())
-                    .get(0)
-                    .getId();
+            String client_id = keycloakService.getClientId(keycloak);
             UserResource userResource1 = keycloak
                     .realm(configurationService.getRealm())
                     .users()
@@ -267,7 +236,9 @@ public class UserController {
             );
             userResource1.roles().clientLevel(client_id).add(roleToAdd);
         }
-        userService.save(userDTO1);
+        if (userDTO1.getKeycloak_id() != null) {
+            userService.save(userDTO1);
+        }
         System.out.println(userDTO1);
         return ResponseEntity.ok(userDTO);
     }
