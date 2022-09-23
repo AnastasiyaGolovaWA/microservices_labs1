@@ -35,17 +35,15 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable().sessionManagement().
 
                 sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
-                .antMatchers("/users/create").permitAll()
-                .antMatchers("/users/admin").hasRole("admin")
-                .antMatchers("/users/user").hasRole("user")
+                .antMatchers("/users/create").hasRole("admin")
                 .antMatchers("/users/signin").permitAll()
-                .antMatchers("/users/client/{username}").permitAll()
-                .antMatchers("/users//delete/{userId}").permitAll()
-                .antMatchers("/users/update/{userId}").permitAll()
-                .antMatchers("/users/find/{userId}").permitAll()
-                .antMatchers("/users/remove_role/{userId}").permitAll()
-                .antMatchers("/users/users/userinfo").permitAll()
-                .antMatchers("/users/findAllUsers/{litter}").permitAll()
+                .antMatchers("/users/client/{username}").hasRole("admin")
+                .antMatchers("/users//delete/{userId}").hasRole("admin")
+                .antMatchers("/users/update/{userId}").hasRole("admin")
+                .antMatchers("/users/find/{userId}").hasRole("admin")
+                .antMatchers("/users/remove_role/{userId}").hasRole("admin")
+                .antMatchers("/users/users/userinfo").hasAnyRole("admin","user")
+                .antMatchers("/users/findAllUsers/{litter}").hasRole("admin")
                 .anyRequest().authenticated();
 
     }
