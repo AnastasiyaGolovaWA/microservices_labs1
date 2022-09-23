@@ -2,9 +2,7 @@ package com.example.springclient.controllers;
 
 import com.example.springclient.config.ConfigurationService;
 import com.example.springclient.models.UserDTO;
-import com.example.springclient.repository.UserRepository;
 import com.example.springclient.service.UserService;
-import org.h2.engine.User;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -29,7 +27,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.core.Response;
 import java.security.Principal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 
@@ -50,8 +51,8 @@ public class UserController {
 
     public Keycloak getToken() {
         Keycloak keycloak = KeycloakBuilder.builder().serverUrl(configurationService.getAuthServerUrl())
-                .grantType(OAuth2Constants.PASSWORD).realm("master").clientId("admin-cli")
-                .username("admin").password("admin")
+                .grantType(OAuth2Constants.PASSWORD).realm(configurationService.getMasterRealm()).clientId(configurationService.getMasterClientId())
+                .username(configurationService.getMasterUsername()).password(configurationService.getMasterPassword())
                 .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build()).build();
 
         keycloak.tokenManager().getAccessToken();

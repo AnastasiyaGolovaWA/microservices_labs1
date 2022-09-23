@@ -30,4 +30,20 @@ public class ConfigurationService {
         return env.getProperty("clientSecret");
     }
 
+    public String getMasterRealm() {
+        return env.getProperty("master.realm");
+    }
+
+    public String getMasterClientId() {
+        return env.getProperty("master.clientId");
+    }
+
+    public String getMasterUsername() {
+        return env.getProperty("master.username");
+    }
+
+    public String getMasterPassword() {
+        return env.getProperty("master.password");
+    }
+
 }
