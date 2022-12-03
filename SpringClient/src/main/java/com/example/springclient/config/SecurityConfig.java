@@ -36,9 +36,10 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
                 sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
                 .antMatchers("/users/create").hasRole("admin")
+                .antMatchers("users/hello").permitAll()
                 .antMatchers("/users/signin").permitAll()
                 .antMatchers("/users/client/{username}").hasRole("admin")
-                .antMatchers("/users//delete/{userId}").hasRole("admin")
+                .antMatchers("/users/delete/{userId}").hasRole("admin")
                 .antMatchers("/users/update/{userId}").hasRole("admin")
                 .antMatchers("/users/find/{userId}").hasRole("admin")
                 .antMatchers("/users/remove_role/{userId}").hasRole("admin")

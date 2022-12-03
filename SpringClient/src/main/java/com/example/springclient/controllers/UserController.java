@@ -76,6 +76,11 @@ public class UserController {
         return list.stream().filter(x -> x.getUsername().startsWith(litter));
     }
 
+    @GetMapping(path = "/hello")
+    public String getHello() {
+        return "CCCMMCMCMCMCMCM";
+    }
+
     @PutMapping(path = "/update/{userId}")
     public String updateUser(@PathVariable("userId") String userId, @RequestBody UserDTO userDTO) throws IllegalAccessException {
         Keycloak keycloak = keycloakService.getToken();
