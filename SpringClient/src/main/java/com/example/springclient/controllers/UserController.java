@@ -200,6 +200,7 @@ public class UserController {
         userDTO.setLastname(accessToken.getFamilyName());
         userDTO.setEmail(accessToken.getEmail());
         if (model != null) {
+            userDTO.setId(model.getId());
             userDTO.setKeycloak_id(model.getKeycloak_id());
             userDTO.setCompany_id(model.getCompany_id());
             userDTO.setPassword(model.getPassword());
