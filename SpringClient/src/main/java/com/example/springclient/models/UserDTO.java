@@ -41,4 +41,7 @@ public class UserDTO {
     @NotNull
     @Column(name = "keycloak_id")
     private String keycloak_id;
+
+    @Column(name = "company_id")
+    private Long company_id;
 }

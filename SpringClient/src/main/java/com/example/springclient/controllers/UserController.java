@@ -212,6 +212,7 @@ public class UserController {
         userDTO1.setUsername(user.getUsername());
         userDTO1.setPassword(userDTO.getPassword());
         userDTO1.setRole(userDTO.getRole());
+        userDTO1.setCompany_id(userDTO.getCompany_id());
 
         if (response.getStatus() == 201) {
 

@@ -149,7 +149,7 @@
                 <version>1.5</version>
                 <configuration>
                     <driver>org.postgresql.Driver</driver>
-                    <url>jdbc:postgresql://localhost:5432/keycloak_db</url>
+                    <url>jdbc:postgresql://127.0.0.1:5436/keycloak_db</url>
                     <user>postgres</user>
                     <password>root</password>
                 </configuration>
