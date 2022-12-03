@@ -36,6 +36,7 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
                 sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
                 .antMatchers("/users/create").hasRole("admin")
+                .antMatchers("users/userId").permitAll()
                 .antMatchers("users/hello").permitAll()
                 .antMatchers("/users/signin").permitAll()
                 .antMatchers("/users/client/{username}").hasRole("admin")

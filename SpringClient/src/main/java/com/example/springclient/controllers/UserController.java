@@ -1,12 +1,10 @@
 package com.example.springclient.controllers;
 
 import com.example.springclient.AppController;
-import com.example.springclient.SimpleClient;
 import com.example.springclient.config.ConfigurationService;
 import com.example.springclient.models.UserDTO;
 import com.example.springclient.service.KeycloakService;
 import com.example.springclient.service.UserService;
-import org.apache.http.protocol.HTTP;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
@@ -22,7 +20,6 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -289,5 +286,10 @@ public class UserController {
                 authzClient.obtainAccessToken(userDTO.getUsername(), userDTO.getPassword());
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(path = "/{userId}")
+    public boolean findById(@PathVariable("userId") long userId) {
+        return userService.findByUserId(userId);
     }
 }

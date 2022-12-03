@@ -33,4 +33,8 @@ public class UserService {
     public UserDTO findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
+
+    public boolean findByUserId(long id) {
+        return userRepository.findById(id).isPresent();
+    }
 }
