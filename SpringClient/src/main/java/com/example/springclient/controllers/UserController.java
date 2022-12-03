@@ -193,11 +193,18 @@ public class UserController {
     public UserDTO userInfoController(UserDTO userDTO, Principal principal) {
         KeycloakAuthenticationToken keycloakAuthenticationToken = (KeycloakAuthenticationToken) principal;
         AccessToken accessToken = keycloakAuthenticationToken.getAccount().getKeycloakSecurityContext().getToken();
+        String login = accessToken.getPreferredUsername();
+        UserDTO model = userService.findByUsername(login);
         userDTO.setUsername(accessToken.getPreferredUsername());
         userDTO.setFirstname(accessToken.getGivenName());
         userDTO.setLastname(accessToken.getFamilyName());
         userDTO.setEmail(accessToken.getEmail());
-        userDTO.setKeycloak_id(accessToken.getId());
+        if (model != null) {
+            userDTO.setKeycloak_id(model.getKeycloak_id());
+            userDTO.setCompany_id(model.getCompany_id());
+            userDTO.setPassword(model.getPassword());
+            userDTO.setRole(model.getRole());
+        }
         return userDTO;
     }
 
