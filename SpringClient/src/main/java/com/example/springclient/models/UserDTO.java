@@ -43,5 +43,5 @@ public class UserDTO {
     private String keycloak_id;
 
     @Column(name = "company_id")
-    private Long company_id;
+    private Integer company_id;
 }

@@ -1,9 +1,12 @@
 package com.example.springclient.controllers;
 
+import com.example.springclient.AppController;
+import com.example.springclient.SimpleClient;
 import com.example.springclient.config.ConfigurationService;
 import com.example.springclient.models.UserDTO;
 import com.example.springclient.service.KeycloakService;
 import com.example.springclient.service.UserService;
+import org.apache.http.protocol.HTTP;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
@@ -19,6 +22,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +37,8 @@ import java.util.stream.Stream;
 public class UserController {
     private UserService userService;
 
+    private AppController appController;
+
     private KeycloakService keycloakService;
 
     @Autowired
@@ -41,6 +47,11 @@ public class UserController {
     @Autowired
     public void setUserService(UserService userService) {
         this.userService = userService;
+    }
+
+    @Autowired
+    public void setAppController(AppController appController) {
+        this.appController = appController;
     }
 
     @Autowired
@@ -212,7 +223,12 @@ public class UserController {
         userDTO1.setUsername(user.getUsername());
         userDTO1.setPassword(userDTO.getPassword());
         userDTO1.setRole(userDTO.getRole());
-        userDTO1.setCompany_id(userDTO.getCompany_id());
+        if (appController.findById(userDTO.getCompany_id())) {
+                userDTO1.setCompany_id(userDTO.getCompany_id());
+            }
+        else {
+            return (ResponseEntity<?>) ResponseEntity.badRequest();
+        }
 
         if (response.getStatus() == 201) {
 
