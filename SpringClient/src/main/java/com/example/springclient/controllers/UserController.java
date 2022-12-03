@@ -191,11 +191,13 @@ public class UserController {
 
     @GetMapping("/userinfo")
     public UserDTO userInfoController(UserDTO userDTO, Principal principal) {
-
         KeycloakAuthenticationToken keycloakAuthenticationToken = (KeycloakAuthenticationToken) principal;
         AccessToken accessToken = keycloakAuthenticationToken.getAccount().getKeycloakSecurityContext().getToken();
-
-        userDTO.setUsername(accessToken.getName());
+        userDTO.setUsername(accessToken.getPreferredUsername());
+        userDTO.setFirstname(accessToken.getGivenName());
+        userDTO.setLastname(accessToken.getFamilyName());
+        userDTO.setEmail(accessToken.getEmail());
+        userDTO.setKeycloak_id(accessToken.getId());
         return userDTO;
     }
 
