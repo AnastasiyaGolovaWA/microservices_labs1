@@ -15,4 +15,5 @@ public class AppController {
     public boolean findById(@PathVariable Integer companyId) {
         return client.findById(companyId);
     }
+
 }

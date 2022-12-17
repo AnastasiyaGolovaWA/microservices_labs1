@@ -37,4 +37,8 @@ public class UserService {
     public boolean findByUserId(long id) {
         return userRepository.findById(id).isPresent();
     }
+
+    public UserDTO getByUserId(long id) {
+        return userRepository.getOne(id);
+    }
 }

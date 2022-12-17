@@ -36,8 +36,9 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
                 sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
                 .antMatchers("/users/create").hasRole("admin")
-                .antMatchers("users/userId").permitAll()
+               // .antMatchers("users/userId").permitAll()
                 .antMatchers("users/hello").permitAll()
+                .antMatchers("users/getOne/{userId}").permitAll()
                 .antMatchers("/users/signin").permitAll()
                 .antMatchers("/users/client/{username}").hasRole("admin")
                 .antMatchers("/users/delete/{userId}").hasRole("admin")
@@ -45,8 +46,8 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .antMatchers("/users/find/{userId}").hasRole("admin")
                 .antMatchers("/users/remove_role/{userId}").hasRole("admin")
                 .antMatchers("/users/users/userinfo").hasAnyRole("admin","user")
-                .antMatchers("/users/findAllUsers/{litter}").hasRole("admin")
-                .anyRequest().authenticated();
+                .antMatchers("/users/findAllUsers/{litter}").hasRole("admin");
+                //     .anyRequest().authenticated();
 
     }
 

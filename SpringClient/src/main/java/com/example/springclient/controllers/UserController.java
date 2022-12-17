@@ -5,6 +5,9 @@ import com.example.springclient.config.ConfigurationService;
 import com.example.springclient.models.UserDTO;
 import com.example.springclient.service.KeycloakService;
 import com.example.springclient.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONObject;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
@@ -27,7 +30,6 @@ import javax.ws.rs.core.Response;
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Stream;
-
 
 @RequestMapping(value = "/users")
 @RestController
@@ -284,12 +286,36 @@ public class UserController {
 
         AccessTokenResponse response =
                 authzClient.obtainAccessToken(userDTO.getUsername(), userDTO.getPassword());
-
         return ResponseEntity.ok(response);
     }
 
     @GetMapping(path = "/{userId}")
-    public boolean findById(@PathVariable("userId") long userId) {
+    public Boolean findById(@PathVariable("userId") long userId) {
         return userService.findByUserId(userId);
+    }
+
+    @GetMapping(path = "getOne/{userId}")
+    public String getOne(@PathVariable("userId") long userId) throws JsonProcessingException {
+        UserDTO user = userService.getByUserId(userId);
+        UserDTO u = new UserDTO();
+        u.setId(user.getId());
+        u.setPassword(user.getPassword());
+        u.setRole(user.getRole());
+        u.setLastname(user.getLastname());
+        u.setUsername(user.getUsername());
+        u.setEmail(user.getEmail());
+        u.setFirstname(user.getFirstname());
+        u.setKeycloak_id(user.getKeycloak_id());
+        u.setCompany_id(user.getCompany_id());
+
+        String json = new ObjectMapper().writeValueAsString(u);
+
+        Object userPrettyJson = new ObjectMapper().readValue(
+                json, UserDTO.class);
+
+        String obj = new ObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(userPrettyJson);
+
+        return obj;
     }
 }
