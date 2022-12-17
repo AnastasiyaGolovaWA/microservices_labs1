@@ -2,6 +2,7 @@ package com.example.springclient.controllers;
 
 import com.example.springclient.AppController;
 import com.example.springclient.config.ConfigurationService;
+import com.example.springclient.models.UserDTOCompany;
 import com.example.springclient.models.UserDTO;
 import com.example.springclient.service.KeycloakService;
 import com.example.springclient.service.UserService;
@@ -23,6 +24,8 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -236,7 +239,8 @@ public class UserController {
                 userDTO1.setCompany_id(userDTO.getCompany_id());
             }
         else {
-            return (ResponseEntity<?>) ResponseEntity.badRequest();
+            return new ResponseEntity<Object>(
+                    "Такой компании не существует!", new HttpHeaders(), HttpStatus.BAD_REQUEST);
         }
 
         if (response.getStatus() == 201) {
@@ -317,5 +321,31 @@ public class UserController {
                 .writeValueAsString(userPrettyJson);
 
         return obj;
+    }
+
+    @GetMapping(path = "/all")
+    public List<String> getAll() {
+        List<String> userDTOs = new ArrayList<>();
+        List<UserDTO> users = userService.getAll();
+        for (UserDTO user : users) {
+            UserDTOCompany userDTOCompany = new UserDTOCompany();
+            userDTOCompany.setId(user.getId());
+            userDTOCompany.setUsername(user.getUsername());
+            userDTOCompany.setFirstname(user.getFirstname());
+            userDTOCompany.setLastname(user.getLastname());
+            userDTOCompany.setEmail(user.getEmail());
+            userDTOCompany.setKeycloak_id(user.getKeycloak_id());
+            userDTOCompany.setRole(user.getRole());
+            if (user.getCompany_id() != null) {
+                String company = appController.getOne(user.getCompany_id());
+                JSONObject jsonObject = new JSONObject(company);
+                userDTOCompany.setCompany_id(String.valueOf(jsonObject.get("companyId")));
+                userDTOCompany.setName(String.valueOf(jsonObject.get("name")));
+                userDTOCompany.setShortName(String.valueOf(jsonObject.get("shortName")));
+                userDTOCompany.setOgrn(String.valueOf(jsonObject.get("ogrn")));
+            }
+            userDTOs.add(userDTOCompany.toString());
+        }
+        return userDTOs;
     }
 }

@@ -9,4 +9,7 @@ public interface SimpleClient {
 
     @GetMapping("/companies/{companyId}")
     boolean findById (@PathVariable Integer companyId);
+
+    @GetMapping("/companies/getOne/{companyId}")
+    String getOne(@PathVariable Integer companyId);
 }

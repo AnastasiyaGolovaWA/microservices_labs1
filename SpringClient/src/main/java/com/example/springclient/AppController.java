@@ -16,4 +16,9 @@ public class AppController {
         return client.findById(companyId);
     }
 
+    @GetMapping("/companies/getOne/{companyId}")
+    public String getOne(@PathVariable Integer companyId) {
+        return client.getOne(companyId);
+    }
+
 }
