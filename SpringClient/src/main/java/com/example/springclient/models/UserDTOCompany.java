@@ -39,12 +39,12 @@ public class UserDTOCompany {
                 ", lastName=" + lastname +
                 ", role=" + role +
                 ", keycloackId=" + keycloak_id +
-                '}' +
-                "Company{" +
+                " Company{" +
                 "companyId=" + company_id +
                 ", name=" + name +
                 ", shortName=" + shortName +
                 ", ogrn=" + ogrn +
+                '}' +
                 '}';
     }
 }
