@@ -28,6 +28,20 @@ public class UserDTOCompany {
 
     private String ogrn;
 
+    private String addressId;
+
+    private String index;
+
+    private String area;
+
+    private String city;
+
+    private String street;
+
+    private String homeNumber;
+
+    private String officeNumber;
+
     @Override
     public String toString() {
         return "User{" +
@@ -44,6 +58,15 @@ public class UserDTOCompany {
                 ", name=" + name +
                 ", shortName=" + shortName +
                 ", ogrn=" + ogrn +
+                " Address{" +
+                "addressId=" + addressId +
+                ", index=" + index +
+                ", area=" + area +
+                ", city=" + city +
+                ", street=" + street +
+                ", homeNumber=" + homeNumber +
+                ", officeNumber=" + officeNumber +
+                '}'+
                 '}' +
                 '}';
     }

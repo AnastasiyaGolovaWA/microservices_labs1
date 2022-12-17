@@ -343,6 +343,16 @@ public class UserController {
                 userDTOCompany.setName(String.valueOf(jsonObject.get("name")));
                 userDTOCompany.setShortName(String.valueOf(jsonObject.get("shortName")));
                 userDTOCompany.setOgrn(String.valueOf(jsonObject.get("ogrn")));
+
+                if (!Objects.equals(String.valueOf(jsonObject.get("address")), "null")) {
+                    userDTOCompany.setAddressId(String.valueOf(jsonObject.getJSONObject("address").get("addressId")));
+                    userDTOCompany.setStreet(String.valueOf(jsonObject.getJSONObject("address").get("street")));
+                    userDTOCompany.setArea(String.valueOf(jsonObject.getJSONObject("address").get("area")));
+                    userDTOCompany.setCity(String.valueOf(jsonObject.getJSONObject("address").get("city")));
+                    userDTOCompany.setIndex(String.valueOf(jsonObject.getJSONObject("address").get("index")));
+                    userDTOCompany.setHomeNumber(String.valueOf(jsonObject.getJSONObject("address").get("homeNumber")));
+                    userDTOCompany.setOfficeNumber(String.valueOf(jsonObject.getJSONObject("address").get("officeNumber")));
+                }
             }
             userDTOs.add(userDTOCompany.toString());
         }
