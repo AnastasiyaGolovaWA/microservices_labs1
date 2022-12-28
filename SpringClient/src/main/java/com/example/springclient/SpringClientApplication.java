@@ -22,7 +22,6 @@ import java.io.IOException;
 
 @SpringBootApplication
 @EnableFeignClients
-@EnableKafka
 public class SpringClientApplication {
 
     public static void main(String[] args) throws JsonProcessingException {
@@ -34,18 +33,4 @@ public class SpringClientApplication {
         return new KeycloakSpringBootConfigResolver();
     }
 
-    @Bean
-    public JsonDeserializer jsonDeserializer() {
-        return new JsonDeserializer() {
-            @Override
-            public Object deserialize(JsonParser p, DeserializationContext context) throws IOException {
-                return null;
-            }
-        };
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
 }
