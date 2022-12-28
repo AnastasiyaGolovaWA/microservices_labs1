@@ -15,7 +15,7 @@
       <module name="Company" target="17" />
       <module name="micro_lab1" target="1.8" />
       <module name="properties" target="17" />
-      <module name="SpringClient" target="1.8" />
+      <module name="SpringClient" target="17" />
       <module name="SpringServer" target="1.8" />
     </bytecodeTargetLevel>
   </component>
