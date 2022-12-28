@@ -26,9 +26,8 @@ public class Consumer {
         this.userService = userService;
     }
 
-    @KafkaListener(topics = "users", groupId = "group_id")
+    @KafkaListener(topics = "delete_companies", groupId = "group_id")
     public void consume(String message) throws IOException {
-        userService.delete(4L);
         logger.info(String.format("#### -> Producing message -> %s", message));
     }
 }
