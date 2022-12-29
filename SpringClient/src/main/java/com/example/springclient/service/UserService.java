@@ -41,4 +41,12 @@ public class UserService {
     public UserDTO getByUserId(long id) {
         return userRepository.getOne(id);
     }
+
+    public List<UserDTO> findByCompanyId(Integer companyId) {
+        return userRepository.findByCompany_id(companyId);
+    }
+
+    public void updateCompany(Integer id) {
+        userRepository.updateCompany_id(id);
+    }
 }
